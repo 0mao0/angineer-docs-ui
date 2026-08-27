@@ -3,6 +3,10 @@
   "version": "0.2.1",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0mao0/angineer-docs-ui.git"
+  },
   "publishConfig": {
     "access": "public"
   },
