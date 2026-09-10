@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2
+
+- fix: 去除 package.json 的 UTF-8 BOM（0.2.1 之前发布出去的包内 manifest 带 BOM；pnpm ≥10 读本地目录/git 形式的依赖时用严格 JSON.parse，会直接报 `Unexpected token '' … is not valid JSON` —— DredgeAI 升级到 pnpm 11 时实测踩到）
+
 ## 0.2.1
 
 - feat: npm registry 正式上架（@angineer/docs-ui），smartree 依赖以 ^0.1.1 从 registry 解析（不再依赖 git 安装）
