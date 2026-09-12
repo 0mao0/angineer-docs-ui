@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3
+
+- perf: package.json 声明 sideEffects 仅样式文件，组件模块可被 bundler tree-shake（消费方知识库关键路径实测 -895KB）
+- feat: 新增 ./composables/useKnowledgeParse 子路径导出，消费方可按需导入解析 composable
+- perf: PDF_Viewer 与 workspace 预览链路更新（同步 monorepo 至 2026-09-12）
+
 ## 0.2.2
 
 - fix: 去除 package.json 的 UTF-8 BOM（0.2.1 之前发布出去的包内 manifest 带 BOM；pnpm ≥10 读本地目录/git 形式的依赖时用严格 JSON.parse，会直接报 `Unexpected token '' … is not valid JSON` —— DredgeAI 升级到 pnpm 11 时实测踩到）
