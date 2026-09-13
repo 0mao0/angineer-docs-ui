@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.4
+
+- fix: 解析阶段词表补齐 `figure_describe`——阶段抽屉此前整行不渲染该阶段（状态/耗时/错误都看不到，也没有它的启动按钮），PDF_Viewer 进度条会显示原始英文 key 且分母写死 8（现为 9）
+- fix: `xlsx` 依赖换成 SheetJS CDN `0.20.3` tarball（npm 版 `0.18.5` 无修复，CVE-2023-30533 / CVE-2024-22363），与 monorepo 对齐
+
 ## 0.2.3
 
 - perf: package.json 声明 sideEffects 仅样式文件，组件模块可被 bundler tree-shake（消费方知识库关键路径实测 -895KB）
