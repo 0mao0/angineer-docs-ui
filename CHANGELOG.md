@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+
+- **BREAKING removed**: `mapParseStageText(stage, parseError)`（连同内部 `stageSteps`/`STAGE_TOTAL`）——其阶段词表属于已退役的 6 段流水线（`preparing`/`converting`/`popo_normalize`/`indexing`），与现行 9 阶段（`source_prep`/…/`figure_describe`/`fts`/`vectors`/`graph`）不匹配，继续使用只会得到永远对不上的「步骤x/6」假进度。仓内与文档已全量移除（README 同步删 3 处登记，含一处失真记载：组件依赖表声称 `DocumentParsedWorkspace.vue` 使用它，实际无 import）
+  - 影响面：仅直接 `import { mapParseStageText } from '@angineer/docs-ui'` 的消费方会构建报错；阶段抽屉/进度条走组件内部逻辑，不受影响（0.2.4 的 `figure_describe` 阶段抽屉修复仍然有效）
+  - 迁移：进度文案请直接使用后端 `parse_stage` 字段自行映射，或按现行 9 阶段词表自建映射
+
 ## 0.2.4
 
 - fix: 解析阶段词表补齐 `figure_describe`——阶段抽屉此前整行不渲染该阶段（状态/耗时/错误都看不到，也没有它的启动按钮），PDF_Viewer 进度条会显示原始英文 key 且分母写死 8（现为 9）
