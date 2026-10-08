@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1
+
+- feat: `KnowledgeTree` 支持虚拟滚动——新增 `virtual` / `height` 透传（默认 `false`，行为对既有消费方零变化），超大库（实测 2609 节点级）开启后只渲染视口内节点，修「越展开越慢」；组件内挂 `ResizeObserver` 实测容器高度，未给 `height` 时也能拿到视口高
+- fix: 知识树每级先子文件夹后文件，不再交叉排列——`buildTree` 出口按单键 `isFolder` 稳定排序（组内保持 API 序＝`sort_order`，与日常维护文件夹下拉顺序同源）
+- fix: 解析工作台大文档两处——① 跨文档迟到响应污染版本戳造成的 `build_id` 假告警（4 处收口）；② 解析对比整图改按需加载：改为展开面板/按块定位时才拉取，点击文档 0 次请求（此前整图重复拉 2~3 遍，单篇约 10.5MB）
+
 ## 0.3.0
 
 - **BREAKING removed**: `mapParseStageText(stage, parseError)`（连同内部 `stageSteps`/`STAGE_TOTAL`）——其阶段词表属于已退役的 6 段流水线（`preparing`/`converting`/`popo_normalize`/`indexing`），与现行 9 阶段（`source_prep`/…/`figure_describe`/`fts`/`vectors`/`graph`）不匹配，继续使用只会得到永远对不上的「步骤x/6」假进度。仓内与文档已全量移除（README 同步删 3 处登记，含一处失真记载：组件依赖表声称 `DocumentParsedWorkspace.vue` 使用它，实际无 import）
