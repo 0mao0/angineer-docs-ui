@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.2
+
+- perf: 知识库树数据层懒加载 + 全库搜索——admin 知识库页首屏 3-5s 根治；`buildTree` 新增 `BuildTreeOptions.loadedLibraryIds`（懒加载模式：仅已加载库根带 children，其余由宿主经 loadData 通道按库拉取后重建）
+- breaking: 删除僵尸函数 `mapParseStageText(stage, parseError)`——其阶段词表属于已退役的 6 段流水线，与现行 9 阶段（source_prep/…/graph）不匹配，继续使用只会得到永远对不上的「步骤/6」假进度。仅直接 `import { mapParseStageText }` 的消费方构建报错；进度文案请直接用后端 `parse_stage` 字段自行映射
+- feat: 引用一跳即跳页、图谱按需到点树才拉、PDF 副本后台构建；点引用角标后台补拉图谱、高亮框自动补现（开 PDF/展开面板不触发拉取）
+- feat: 知识库「查看」抽屉恢复知识图谱页签（只读化）
+- fix: 图谱浮层深色下白字白底——统计条/图例/提示/空态改走宿主主题变量（含浅色兜底）；实体抽屉硬编码色同步收口（hover/分隔线/次要文字）
+- chore: 左树统一收口（四树默认全折叠）；doc_blocks_graph 中文口径定名「文本块」；许可统一 MIT
+
+
 ## 0.3.1
 
 - feat: `KnowledgeTree` 支持虚拟滚动——新增 `virtual` / `height` 透传（默认 `false`，行为对既有消费方零变化），超大库（实测 2609 节点级）开启后只渲染视口内节点，修「越展开越慢」；组件内挂 `ResizeObserver` 实测容器高度，未给 `height` 时也能拿到视口高
