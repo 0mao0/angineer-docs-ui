@@ -45,7 +45,8 @@
             <a-radio-button value="Preview_Markdown" title="Markdown">
               <FileMarkdownOutlined />
             </a-radio-button>
-            <a-radio-button value="Preview_IndexTree" :disabled="!hasGraphData" title="树形">
+            <!-- 不再因「图谱未加载」禁用：点树形页签本身就是按需加载图谱的触发（工作区 activeTab watch）；树视图自带 loading 态 -->
+            <a-radio-button value="Preview_IndexTree" title="树形">
               <BranchesOutlined />
             </a-radio-button>
 <a-radio-button v-if="canShowKnowledgeGraph" value="Preview_KnowledgeGraph" title="知识图谱">
@@ -159,7 +160,7 @@
         <div class="index-body">
           <Preview_IndexTree
             v-if="activeTab === 'Preview_IndexTree'"
-            :loading="!hasGraphData"
+            :loading="props.graphDataLoading"
             :dark="props.dark"
             :node-map="nodeMap"
             :children-map="childrenMap"
@@ -283,6 +284,9 @@ const props = defineProps<{
   activeLineRange: { start: number; end: number } | null
   sourceFilePath?: string
   graphData?: DocBlocksGraphType | null
+  /** 文本块数据按需加载中（宿主状态）：树视图的转圈只跟它走，不再跟「有没有数据」走 */
+  graphDataLoading?: boolean
+  onLoadFullGraphData?: () => Promise<void>
   libraryId?: string
   docId?: string
   onUpdateStructuredNode?: (payload: StructuredNodeUpdatePayload) => Promise<void>
@@ -317,7 +321,10 @@ const readonly = computed(() =>
   && !props.onBatchStructuredOperation
   && !props.onUndoLastOperation
 )
-const canShowKnowledgeGraph = computed(() => Boolean(props.onLoadGraphSnapshot && props.onBuildGraph))
+// 图谱页签显示条件=能读快照（loadSnapshot）；buildGraph 是可选的写动作（提取/AI 深度提取按钮）——
+// 只读位（知识库页「查看」抽屉）只传前者：页签可见、写按钮隐藏（业主 2026-10-16 选①「只读化」）。
+// 旧口径要求两者齐备，等于把「只看图」也锁死（抽屉里页签整枚消失，8-10 的 readonly 门控副作用）。
+const canShowKnowledgeGraph = computed(() => Boolean(props.onLoadGraphSnapshot))
 const editModalVisible = ref(false)
 const savingNodeEdit = ref(false)
 const editingNodeId = ref<string | null>(null)
@@ -405,7 +412,6 @@ const {
   rightPaneRef,
   headerTitleRowRef,
   isIndexMode,
-  hasGraphData,
   graphNodeLookup,
   flatIndexItems,
   nodeMap,

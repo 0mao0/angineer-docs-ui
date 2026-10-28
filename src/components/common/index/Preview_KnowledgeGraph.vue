@@ -23,7 +23,8 @@
     </div>
     <div v-else-if="!entities.length && viewMode === 'doc' && !extractLoading && !deepExtractLoading" class="graph-empty">
       <div class="graph-empty-text">本文档尚未提取图谱</div>
-      <div class="graph-empty-desc">点击下方按钮快速扫描文档中的工程术语，建立基础实体关系</div>
+      <div v-if="canBuildGraph" class="graph-empty-desc">点击下方按钮快速扫描文档中的工程术语，建立基础实体关系</div>
+      <div v-else class="graph-empty-desc">可去「解析」工作台提取图谱后再回来查看</div>
     </div>
     <div v-else-if="!entities.length && viewMode === 'global'" class="graph-empty">
       <div class="graph-empty-text">暂无全局图谱数据</div>
@@ -175,8 +176,10 @@ const viewMode = ref<'doc' | 'global'>('doc')
 const hasExtracted = ref(false)
 const hasDeepExtracted = ref(false)
 
-const showExtractButton = computed(() => props.libraryId && props.docId && !hasExtracted.value)
-const showDeepExtractButton = computed(() => props.libraryId && props.docId && hasExtracted.value && !hasDeepExtracted.value)
+// 只读位（查看抽屉等）只传 loadSnapshot 不传 buildGraph：两个提取按钮随之隐藏（图谱=只看不建）
+const canBuildGraph = computed(() => Boolean(props.buildGraph))
+const showExtractButton = computed(() => canBuildGraph.value && props.libraryId && props.docId && !hasExtracted.value)
+const showDeepExtractButton = computed(() => canBuildGraph.value && props.libraryId && props.docId && hasExtracted.value && !hasDeepExtracted.value)
 
 const layerColors: Record<string, { border: string; bg: string; text: string }> = {
   concept: { border: '#2563eb', bg: '#bfdbfe', text: '#1e40af' },
@@ -484,7 +487,7 @@ defineExpose({ reload })
 }
 .graph-loading {
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  height: 200px; color: #6b7280;
+  height: 200px; color: var(--text-secondary, #6b7280);
 }
 .graph-empty {
   display: flex;
@@ -493,22 +496,22 @@ defineExpose({ reload })
   justify-content: center;
   height: 200px;
   gap: 8px;
-  color: #6b7280;
+  color: var(--text-secondary, #6b7280);
 }
 .graph-empty-text {
   font-size: 15px;
   font-weight: 500;
-  color: #374151;
+  color: var(--text-primary, #374151);
 }
 .graph-empty-desc {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--text-tertiary, #9ca3af);
 }
 .network-container {
   width: 100%;
   height: 100%;
   min-height: 400px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 6px;
 }
 .graph-overlay {
@@ -516,13 +519,16 @@ defineExpose({ reload })
   top: 40px; bottom: 8px; left: 8px; right: 8px;
   pointer-events: none;
 }
+// 浮层配色走宿主主题变量（含浅色兜底）：此前硬编码白底且无文字色 ⇒ 深色主题下
+// 继承白色文字落在白底上，统计条/图例全糊（业主 2026-10-16 实拍）
 .graph-stats-bar {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 4px 10px;
-  background: rgba(255,255,255,0.92);
-  border: 1px solid #e5e7eb;
+  background: var(--bg-secondary, rgba(255,255,255,0.92));
+  border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 6px;
   font-size: 12px;
+  color: var(--text-primary, #1f2937);
   pointer-events: auto;
 }
 .stat-item { display: inline-flex; align-items: center; gap: 3px; }
@@ -530,15 +536,16 @@ defineExpose({ reload })
 .stat-dot.concept { background: #2563eb; }
 .stat-dot.condition { background: #d97706; }
 .stat-dot.action { background: #059669; }
-.stat-divider { width: 1px; height: 14px; background: #d1d5db; margin: 0 2px; }
+.stat-divider { width: 1px; height: 14px; background: var(--border-color, #d1d5db); margin: 0 2px; }
 .graph-legend {
   position: absolute;
   bottom: 8px; left: 8px;
   padding: 6px 10px;
-  background: rgba(255,255,255,0.92);
-  border: 1px solid #e5e7eb;
+  background: var(--bg-secondary, rgba(255,255,255,0.92));
+  border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 6px;
   font-size: 11px;
+  color: var(--text-primary, #1f2937);
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -564,11 +571,11 @@ defineExpose({ reload })
 .graph-hint {
   margin-top: 4px;
   padding: 2px 8px;
-  background: rgba(255,255,255,0.85);
-  border: 1px solid #e5e7eb;
+  background: var(--bg-secondary, rgba(255,255,255,0.85));
+  border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 4px;
   font-size: 11px;
-  color: #9ca3af;
+  color: var(--text-tertiary, #9ca3af);
   display: inline-block;
   pointer-events: auto;
 }
@@ -580,16 +587,16 @@ defineExpose({ reload })
 .rel-item {
   display: flex; align-items: flex-start; gap: 6px;
   padding: 4px 0; font-size: 13px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--border-color, #f3f4f6);
   cursor: pointer; flex-wrap: wrap;
 }
-.rel-item:hover { background: #f8fafc; }
-.rel-dir { color: #9ca3af; font-size: 12px; }
+.rel-item:hover { background: var(--bg-tertiary, #f8fafc); }
+.rel-dir { color: var(--text-tertiary, #9ca3af); font-size: 12px; }
 .rel-type { color: #6366f1; font-weight: 500; min-width: 80px; }
 .rel-target { flex: 1; }
-.rel-conf { color: #9ca3af; font-size: 11px; }
-.rel-evidence-preview { width: 100%; color: #6b7280; font-size: 11px; padding-left: 18px; }
-.no-rels { color: #9ca3af; font-size: 13px; padding: 8px 0; }
+.rel-conf { color: var(--text-tertiary, #9ca3af); font-size: 11px; }
+.rel-evidence-preview { width: 100%; color: var(--text-secondary, #6b7280); font-size: 11px; padding-left: 18px; }
+.no-rels { color: var(--text-tertiary, #9ca3af); font-size: 13px; padding: 8px 0; }
 .edge-detail {
   h4 { margin: 12px 0 6px; font-size: 14px; }
   p { margin: 4px 0; font-size: 13px; }
