@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.3
+
+- fix: `@angineer/smartree` 依赖从 `github:0mao0/angineer-smartree-ui#v0.1.4` 临时引用换回 registry 版本号 `0.1.4`——0.3.2 期间 npm 渠道缺 `SmartTreeRemoteHit`/`search-hit` 类型导出才临时指 git tag（0.3.2 首推 publish 根因）；npm 0.1.4 已上架含这些导出，按当时预留收口换回正式引用
+
+
 ## 0.3.2
 
 - perf: 知识库树数据层懒加载 + 全库搜索——admin 知识库页首屏 3-5s 根治；`buildTree` 新增 `BuildTreeOptions.loadedLibraryIds`（懒加载模式：仅已加载库根带 children，其余由宿主经 loadData 通道按库拉取后重建）
