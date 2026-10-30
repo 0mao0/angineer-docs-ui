@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.4
+
+- perf: 树形/知识图谱页签套 `KeepAlive`——切走缓存实例、切回复用，修「加载完了来回切还是慢」（数据已在内存，慢的是每次销毁重建：1896 节点建树 + 图渲染，实测切回从秒级降到 1-2ms）；换文档仍由组件自带的 `[libraryId, docId]` watch 重新拉快照，数据不会陈旧
+- perf: vis-network 从 unpkg.com CDN 改为宿主本地资产 `public/vis/vis-network.min.js`（按 `BASE_URL` 加载，失败回退 CDN），修国内首次打开知识图谱卡在等脚本；图形组件补 `onActivated` 重绘，修 KeepAlive 下切回 canvas 尺寸失效导致空白
+- feat: 文本块数据按场景分流——`onLoadFullGraphData(reason)` 新增 reason（`'locate'` 引用定位走页级切片 / `'tab'` 页签走整本，不传兼容旧行为）；侧面板收起时定位回放不再后台拉整本（修「没看到树形打开却在耗资源」），面板展开时由新增 watch 补拉
+- feat: PDF 加载遮罩改按需语义——去掉误导的百分比进度条（pdf.js range 模式进度天然长期停个位数），改「已取 X / Y MB」+「按需分块加载」说明；超 4 秒追加「大文件首次打开需生成预览副本，可能稍慢；再次打开会更快」
+
 ## 0.3.3
 
 - fix: `@angineer/smartree` 依赖从 `github:0mao0/angineer-smartree-ui#v0.1.4` 临时引用换回 registry 版本号 `0.1.4`——0.3.2 期间 npm 渠道缺 `SmartTreeRemoteHit`/`search-hit` 类型导出才临时指 git tag（0.3.2 首推 publish 根因）；npm 0.1.4 已上架含这些导出，按当时预留收口换回正式引用
