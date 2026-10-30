@@ -101,7 +101,13 @@ interface Props {
   onUpdateStructuredNode?: (payload: StructuredNodeUpdatePayload) => Promise<void>
   onBatchStructuredOperation?: (payload: StructuredBatchOperationPayload) => Promise<void>
   onUndoLastOperation?: () => Promise<void>
-  onLoadFullGraphData?: () => Promise<void>
+  /**
+   * 拉取文本块数据。reason 区分场景（2026-10-30 页级切片）：
+   * 'locate'＝引用定位（宿主应拉目标页 ±2 页的切片，几十 KB）；
+   * 'tab'＝用户点开树形/图谱页签（需要整本，十几 MB）。
+   * 不传 reason 视为 'tab'（旧宿主兼容）。
+   */
+  onLoadFullGraphData?: (reason?: 'locate' | 'tab') => Promise<void>
   onLoadGraphSnapshot?: (params: {
     libraryId?: string
     docId?: string
@@ -305,9 +311,21 @@ watch(() => props.graphData?.nodes?.length || 0, (count, previousCount) => {
 // 文本块数据（doc_blocks_graph，带 bbox，单篇可达十几 MB、大书要几十秒）不再随「面板展开」自动拉：
 // 展开只是打开容器，Markdown 不需要它；真正的按需加载由下方 activeTab watch 触发——
 // 用户点开树形/图谱页签才算需要文本块数据（术语定版 2026-10-27：叫文本块，不叫块图谱）。
+// 2026-10-30 补：拉取还要**侧面板展开**才发生——定位回放会把 activeTab 切成树形，
+// 面板收着时用户看不见页签，8MB 却在后台默默下载（用户报「没看到树形打开却在耗资源」）；
+// 面板展开的动作本身也会触发下方 watch(sidePanelOpen) 补拉，数据不会缺。
 watch(activeTab, (tab) => {
+  if ((tab === 'Preview_IndexTree' || tab === 'Preview_IndexGraph' || tab === 'Preview_KnowledgeGraph') && !props.graphDataFullLoaded && props.sidePanelOpen && props.onLoadFullGraphData) {
+    props.onLoadFullGraphData('tab')
+  }
+})
+
+// 面板从收起展开到树形/图谱类页签时补拉（上面 watch(activeTab) 只盯页签变化，盯不到开合）
+watch(sidePanelOpen, (open) => {
+  if (!open) return
+  const tab = activeTab.value
   if ((tab === 'Preview_IndexTree' || tab === 'Preview_IndexGraph' || tab === 'Preview_KnowledgeGraph') && !props.graphDataFullLoaded && props.onLoadFullGraphData) {
-    props.onLoadFullGraphData()
+    props.onLoadFullGraphData('tab')
   }
 })
 
@@ -331,7 +349,7 @@ const setActiveLinkedItem = (
   if (itemId && !props.graphData?.nodes?.length) {
     pendingLinkedItem.value = { id: itemId, options }
     setWorkspaceLinkedItem(itemId, options)
-    void Promise.resolve(props.onLoadFullGraphData?.()).catch(() => {
+    void Promise.resolve(props.onLoadFullGraphData?.('locate')).catch(() => {
       // 拉取失败静默：兜底跳页已完成，宿主 loadGraphData 自带告警日志
     })
     return
